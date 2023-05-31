@@ -26,6 +26,10 @@ class Reminder {
     public String getDate() {
         return date;
     }
+
+    public boolean isValidDate() {
+        return false;
+    }
 }
 
 public class ReminderApp {
@@ -38,19 +42,24 @@ public class ReminderApp {
     }
 
     public void addReminder() {
-        System.out.print("Enter title: ");
+        System.out.print("Enter the title: ");
         String title = scanner.nextLine();
 
-        System.out.print("Enter description: ");
+        System.out.print("Enter the description: ");
         String description = scanner.nextLine();
 
-        System.out.print("Enter date: ");
+        System.out.print("Enter the date (dd/MM/yyyy): ");
         String date = scanner.nextLine();
 
-        Reminder reminder = new Reminder(title, description, date);
-        reminders.add(reminder);
+        Reminder newReminder = new Reminder(title, description, date);
 
-        System.out.println("Reminder added successfully!");
+        if (!newReminder.isValidDate()) {
+            System.out.println("Invalid date format. Please use the format: dd/MM/yyyy");
+            return;
+        }
+
+        reminders.add(newReminder);
+        System.out.println("Reminder added successfully.");
     }
 
     public void viewReminders() {
