@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 
@@ -55,7 +57,30 @@ public class ReminderApp {
         if (reminders.isEmpty()) {
             System.out.println("No reminders found.");
         } else {
-            System.out.println("Reminders:");
+            System.out.println("View Reminders Menu:");
+            System.out.println("1. Sort by Title");
+            System.out.println("2. Sort by Date");
+            System.out.println("3. Back to Main Menu");
+    
+            System.out.print("Enter your choice: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline character
+    
+            switch (choice) {
+                case 1:
+                    Collections.sort(reminders, Comparator.comparing(Reminder::getTitle));
+                    break;
+                case 2:
+                    Collections.sort(reminders, Comparator.comparing(Reminder::getDate));
+                    break;
+                case 3:
+                    return; // Return to main menu
+                default:
+                    System.out.println("Invalid choice. Returning to main menu.");
+                    return; // Return to main menu
+            }
+    
+            System.out.println("Sorted Reminders:");
             for (int i = 0; i < reminders.size(); i++) {
                 Reminder reminder = reminders.get(i);
                 System.out.println("Index: " + i);
@@ -66,6 +91,7 @@ public class ReminderApp {
             }
         }
     }
+    
 
     public void editReminder() {
         System.out.print("Enter the index of the reminder to edit: ");
