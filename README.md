@@ -1,6 +1,6 @@
 # ReminderApp
 
-ReminderApp is a simple Java application that allows you to manage reminders. You can add reminders with a title, description, and date, and perform various operations like listing reminders, editing reminders, deleting reminders, and searching reminders.
+This Reminder App is a simple Java application that allows you to manage reminders. You can add reminders with a title, description, and date, and perform various operations like listing reminders, editing reminders, deleting reminders, and searching reminders.
 
 ## Features
 
