@@ -1,3 +1,7 @@
+import java.io.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -35,31 +39,64 @@ class Reminder {
 public class ReminderApp {
     private List<Reminder> reminders;
     private Scanner scanner;
+    private static final String DATA_FILE = "reminders.txt";
 
     public ReminderApp() {
         reminders = new ArrayList<>();
         scanner = new Scanner(System.in);
+        loadReminders();
     }
 
     public void addReminder() {
         System.out.print("Enter the title: ");
         String title = scanner.nextLine();
-
+    
         System.out.print("Enter the description: ");
         String description = scanner.nextLine();
-
+    
         System.out.print("Enter the date (dd/MM/yyyy): ");
-        String date = scanner.nextLine();
-
-        Reminder newReminder = new Reminder(title, description, date);
-
-        if (!newReminder.isValidDate()) {
+        String dateStr = scanner.nextLine();
+    
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        try {
+            LocalDate date = LocalDate.parse(dateStr, formatter);
+            String formattedDate = date.format(formatter);
+    
+            Reminder newReminder = new Reminder(title, description, formattedDate);
+            reminders.add(newReminder);
+    
+            System.out.println("Reminder added successfully.");
+            saveReminders();
+        } catch (DateTimeParseException e) {
             System.out.println("Invalid date format. Please use the format: dd/MM/yyyy");
-            return;
         }
+    }
+    
 
-        reminders.add(newReminder);
-        System.out.println("Reminder added successfully.");
+    private void loadReminders() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(DATA_FILE))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] reminderData = line.split(",");
+                String title = reminderData[0];
+                String description = reminderData[1];
+                String date = reminderData[2];
+                reminders.add(new Reminder(title, description, date));
+            }
+        } catch (IOException e) {
+            // If the file doesn't exist or there was an error reading from it, ignore and continue with an empty list
+        }
+    }
+
+    private void saveReminders() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(DATA_FILE))) {
+            for (Reminder reminder : reminders) {
+                writer.write(reminder.getTitle() + "," + reminder.getDescription() + "," + reminder.getDate());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("Error saving reminders: " + e.getMessage());
+        }
     }
 
     public void viewReminders() {
