@@ -27,13 +27,13 @@ ReminderApp is a simple Java application that allows you to manage reminders. Yo
 
 In the terminal, navigate to the directory where the project is located and run the following command to compile it:
 
-- `javac ReminderApp.java .`
+```javac ReminderApp.java```
 
 This will generate a file called ReminderApp.class
 
 Now run the compiled program using the following command:
 
-- `java ReminderApp .`
+```java ReminderApp```
 
 This will execute the main method in the ReminderApp class and display the reminder app menu in the terminal.
 
