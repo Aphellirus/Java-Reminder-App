@@ -25,6 +25,8 @@ This Reminder App is a simple Java application that allows you to manage reminde
 
 ## How to Use with the console
 
+Clone the repository to your local machine
+
 In the terminal, navigate to the directory where the project is located and run the following command to compile it:
 
 ```javac ReminderApp.java```
