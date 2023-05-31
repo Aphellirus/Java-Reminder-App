@@ -56,7 +56,9 @@ public class ReminderApp {
             System.out.println("No reminders found.");
         } else {
             System.out.println("Reminders:");
-            for (Reminder reminder : reminders) {
+            for (int i = 0; i < reminders.size(); i++) {
+                Reminder reminder = reminders.get(i);
+                System.out.println("Index: " + i);
                 System.out.println("Title: " + reminder.getTitle());
                 System.out.println("Description: " + reminder.getDescription());
                 System.out.println("Date: " + reminder.getDate());
@@ -65,9 +67,46 @@ public class ReminderApp {
         }
     }
 
-    public static void main(String[] args) {
-        ReminderApp app = new ReminderApp();
-        app.run();
+    public void editReminder() {
+        System.out.print("Enter the index of the reminder to edit: ");
+        int index = scanner.nextInt();
+        scanner.nextLine(); // Consume newline character
+
+        if (index >= 0 && index < reminders.size()) {
+            Reminder reminder = reminders.get(index);
+
+            System.out.println("Current Title: " + reminder.getTitle());
+            System.out.print("Enter new title: ");
+            String newTitle = scanner.nextLine();
+
+            System.out.println("Current Description: " + reminder.getDescription());
+            System.out.print("Enter new description: ");
+            String newDescription = scanner.nextLine();
+
+            System.out.println("Current Date: " + reminder.getDate());
+            System.out.print("Enter new date: ");
+            String newDate = scanner.nextLine();
+
+            reminder = new Reminder(newTitle, newDescription, newDate);
+            reminders.set(index, reminder);
+
+            System.out.println("Reminder updated successfully!");
+        } else {
+            System.out.println("Invalid index. Please try again.");
+        }
+    }
+
+    public void deleteReminder() {
+        System.out.print("Enter the index of the reminder to delete: ");
+        int index = scanner.nextInt();
+        scanner.nextLine(); // Consume newline character
+
+        if (index >= 0 && index < reminders.size()) {
+            reminders.remove(index);
+            System.out.println("Reminder deleted successfully!");
+        } else {
+            System.out.println("Invalid index. Please try again.");
+        }
     }
 
     public void run() {
@@ -75,7 +114,9 @@ public class ReminderApp {
             System.out.println("Reminder App Menu:");
             System.out.println("1. Add Reminder");
             System.out.println("2. View Reminders");
-            System.out.println("3. Exit");
+            System.out.println("3. Edit Reminder");
+            System.out.println("4. Delete Reminder");
+            System.out.println("5. Exit");
 
             System.out.print("Enter your choice: ");
             int choice = scanner.nextInt();
@@ -89,6 +130,12 @@ public class ReminderApp {
                     viewReminders();
                     break;
                 case 3:
+                    editReminder();
+                    break;
+                case 4:
+                    deleteReminder();
+                    break;
+                case 5:
                     System.out.println("Exiting...");
                     System.exit(0);
                 default:
@@ -97,5 +144,10 @@ public class ReminderApp {
 
             System.out.println();
         }
+    }
+
+    public static void main(String[] args) {
+        ReminderApp app = new ReminderApp();
+        app.run();
     }
 }
