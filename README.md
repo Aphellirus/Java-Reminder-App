@@ -5,6 +5,8 @@ This Reminder App is a simple Java application that allows you to manage reminde
 ## Features
 
 - Add a new reminder: You can add a new reminder by providing a title, description, and date.
+- Recurring Reminders: Add a reminder with a recurrence option.
+- Reminder Priority: Set different priorities to your reminders (low, medium, high).
 - List reminders: View a list of all the reminders currently stored in the application.
 - Edit a reminder: Update the title, description, or date of an existing reminder.
 - Delete a reminder: Remove a reminder from the list.
