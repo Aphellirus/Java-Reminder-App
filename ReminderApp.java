@@ -9,16 +9,22 @@ import java.util.List;
 import java.util.Scanner;
 
 class Reminder {
+    // This reminder class represents a single reminder with it's title, description, date, recurrence, and priority
     private String title;
     private String description;
     private String date;
+    private Recurrence recurrence;
+    private Priority priority;
 
-    public Reminder(String title, String description, String date) {
+    public Reminder(String title, String description, String date, Recurrence recurrence, Priority priority) {
         this.title = title;
         this.description = description;
         this.date = date;
+        this.recurrence = recurrence;
+        this.priority = priority;
     }
 
+    // Getters for the Reminder properties
     public String getTitle() {
         return title;
     }
@@ -31,9 +37,21 @@ class Reminder {
         return date;
     }
 
-    public boolean isValidDate() {
-        return false;
+    public Recurrence getRecurrence() {
+        return recurrence;
     }
+
+    public Priority getPriority() {
+        return priority;
+    }
+}
+
+enum Recurrence {
+    NONE, DAILY, WEEKLY, MONTHLY, YEARLY
+}
+
+enum Priority {
+    LOW, MEDIUM, HIGH
 }
 
 public class ReminderApp {
@@ -47,32 +65,38 @@ public class ReminderApp {
         loadReminders();
     }
 
+    // Method to add a new reminder to the list
     public void addReminder() {
         System.out.print("Enter the title: ");
         String title = scanner.nextLine();
-    
+
         System.out.print("Enter the description: ");
         String description = scanner.nextLine();
-    
+
         System.out.print("Enter the date (dd/MM/yyyy): ");
         String dateStr = scanner.nextLine();
-    
+
+        // Code to parse the date and handle any exceptions
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         try {
             LocalDate date = LocalDate.parse(dateStr, formatter);
             String formattedDate = date.format(formatter);
-    
-            Reminder newReminder = new Reminder(title, description, formattedDate);
+
+            // Ask for recurrence and priority of the reminder
+            Recurrence recurrence = askForRecurrence();
+            Priority priority = askForPriority();
+
+            Reminder newReminder = new Reminder(title, description, formattedDate, recurrence, priority);
             reminders.add(newReminder);
-    
+
             System.out.println("Reminder added successfully.");
             saveReminders();
         } catch (DateTimeParseException e) {
             System.out.println("Invalid date format. Please use the format: dd/MM/yyyy");
         }
     }
-    
 
+    // Method to load reminders from the .txt file
     private void loadReminders() {
         try (BufferedReader reader = new BufferedReader(new FileReader(DATA_FILE))) {
             String line;
@@ -81,227 +105,184 @@ public class ReminderApp {
                 String title = reminderData[0];
                 String description = reminderData[1];
                 String date = reminderData[2];
-                reminders.add(new Reminder(title, description, date));
+                Recurrence recurrence = Recurrence.valueOf(reminderData[3]);
+                Priority priority = Priority.valueOf(reminderData[4]);
+                Reminder reminder = new Reminder(title, description, date, recurrence, priority);
+                reminders.add(reminder);
             }
+            System.out.println("Reminders loaded successfully.");
         } catch (IOException e) {
-            // If the file doesn't exist or there was an error reading from it, ignore and continue with an empty list
+            System.out.println("Error occurred while loading reminders: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid recurrence or priority value in the data file.");
         }
     }
 
+    // Method to save reminders to the .txt file
     private void saveReminders() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(DATA_FILE))) {
             for (Reminder reminder : reminders) {
-                writer.write(reminder.getTitle() + "," + reminder.getDescription() + "," + reminder.getDate());
+                writer.write(reminder.getTitle() + "," + reminder.getDescription() + "," + reminder.getDate() + "," +
+                        reminder.getRecurrence() + "," + reminder.getPriority());
                 writer.newLine();
             }
+            System.out.println("Reminders saved successfully.");
         } catch (IOException e) {
             System.out.println("Error saving reminders: " + e.getMessage());
         }
     }
 
+    // Method to view and sort reminders
     public void viewReminders() {
         if (reminders.isEmpty()) {
             System.out.println("No reminders found.");
         } else {
-            System.out.println("View Reminders Menu:");
-            System.out.println("1. Sort by Title");
-            System.out.println("2. Sort by Date");
-            System.out.println("3. Back to Main Menu");
-    
-            System.out.print("Enter your choice: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline character
-    
-            switch (choice) {
-                case 1:
-                    Collections.sort(reminders, Comparator.comparing(Reminder::getTitle));
-                    break;
-                case 2:
-                    Collections.sort(reminders, Comparator.comparing(Reminder::getDate));
-                    break;
-                case 3:
-                    return; // Return to main menu
-                default:
-                    System.out.println("Invalid choice. Returning to main menu.");
-                    return; // Return to main menu
-            }
-    
-            System.out.println("Sorted Reminders:");
-            for (int i = 0; i < reminders.size(); i++) {
-                Reminder reminder = reminders.get(i);
-                System.out.println("Index: " + i);
-                System.out.println("Title: " + reminder.getTitle());
-                System.out.println("Description: " + reminder.getDescription());
-                System.out.println("Date: " + reminder.getDate());
-                System.out.println("----------------------");
-            }
+            // Display the sorting menu and get the user's choice
+            int choice = displaySortingMenu();
+
+            // Sort the reminders based on the users choice
+            sortReminders(choice);
+
+            // Display the sorted reminders
+            displayReminders();
         }
     }
-    
-    public void searchReminders() {
-        System.out.println("Search Reminders:");
-        System.out.println("1. Search by Title");
-        System.out.println("2. Search by Date");
-        System.out.println("3. Back to Main Menu");
-    
+
+    // Method to display the sorting menu
+    private int displaySortingMenu() {
+        System.out.println("View Reminders Menu:");
+        System.out.println("1. Sort by Title");
+        System.out.println("2. Sort by Date");
+        System.out.println("3. Sort by Recurrence");
+        System.out.println("4. Sort by Priority");
+        System.out.println("5. Back to Main Menu");
+
         System.out.print("Enter your choice: ");
         int choice = scanner.nextInt();
         scanner.nextLine(); // Consume newline character
-    
+
+        return choice;
+    }
+
+    // Method to sort the reminders based on the users choice
+    private void sortReminders(int choice) {
         switch (choice) {
             case 1:
-                System.out.print("Enter the title to search for: ");
-                String title = scanner.nextLine();
-                searchByTitle(title);
+                Collections.sort(reminders, Comparator.comparing(Reminder::getTitle));
                 break;
             case 2:
-                System.out.print("Enter the date to search for: ");
-                String date = scanner.nextLine();
-                searchByDate(date);
+                Collections.sort(reminders, Comparator.comparing(Reminder::getDate));
                 break;
             case 3:
+                Collections.sort(reminders, Comparator.comparing(Reminder::getRecurrence));
+                break;
+            case 4:
+                Collections.sort(reminders, Comparator.comparing(Reminder::getPriority));
+                break;
+            case 5:
                 return; // Return to main menu
             default:
                 System.out.println("Invalid choice. Returning to main menu.");
                 return; // Return to main menu
         }
     }
-    
-    public void searchByTitle(String title) {
-        List<Reminder> matchedReminders = new ArrayList<>();
-    
-        for (Reminder reminder : reminders) {
-            if (reminder.getTitle().equalsIgnoreCase(title)) {
-                matchedReminders.add(reminder);
-            }
-        }
-    
-        if (matchedReminders.isEmpty()) {
-            System.out.println("No reminders found with the specified title.");
-        } else {
-            System.out.println("Matching Reminders (By Title):");
-            for (int i = 0; i < matchedReminders.size(); i++) {
-                Reminder reminder = matchedReminders.get(i);
-                System.out.println("Index: " + reminders.indexOf(reminder));
-                System.out.println("Title: " + reminder.getTitle());
-                System.out.println("Description: " + reminder.getDescription());
-                System.out.println("Date: " + reminder.getDate());
-                System.out.println("----------------------");
-            }
-        }
-    }
-    
-    public void searchByDate(String date) {
-        List<Reminder> matchedReminders = new ArrayList<>();
-    
-        for (Reminder reminder : reminders) {
-            if (reminder.getDate().equalsIgnoreCase(date)) {
-                matchedReminders.add(reminder);
-            }
-        }
-    
-        if (matchedReminders.isEmpty()) {
-            System.out.println("No reminders found with the specified date.");
-        } else {
-            System.out.println("Matching Reminders (By Date):");
-            for (int i = 0; i < matchedReminders.size(); i++) {
-                Reminder reminder = matchedReminders.get(i);
-                System.out.println("Index: " + reminders.indexOf(reminder));
-                System.out.println("Title: " + reminder.getTitle());
-                System.out.println("Description: " + reminder.getDescription());
-                System.out.println("Date: " + reminder.getDate());
-                System.out.println("----------------------");
-            }
-        }
-    }
-    
 
-    public void editReminder() {
-        System.out.print("Enter the index of the reminder to edit: ");
-        int index = scanner.nextInt();
+    // Method to display the sorted reminders
+    private void displayReminders() {
+        System.out.println("Sorted Reminders:");
+        for (int i = 0; i < reminders.size(); i++) {
+            Reminder reminder = reminders.get(i);
+            System.out.println("Index: " + i);
+            System.out.println("Title: " + reminder.getTitle());
+            System.out.println("Description: " + reminder.getDescription());
+            System.out.println("Date: " + reminder.getDate());
+            System.out.println("Recurrence: " + reminder.getRecurrence());
+            System.out.println("Priority: " + reminder.getPriority());
+            System.out.println("----------------------");
+        }
+    }
+
+    // Method to ask the user for recurrence and return the chosen value
+    private Recurrence askForRecurrence() {
+        System.out.println("Select Recurrence:");
+        System.out.println("1. None");
+        System.out.println("2. Daily");
+        System.out.println("3. Weekly");
+        System.out.println("4. Monthly");
+        System.out.println("5. Yearly");
+
+        System.out.print("Enter your choice: ");
+        int choice = scanner.nextInt();
         scanner.nextLine(); // Consume newline character
 
-        if (index >= 0 && index < reminders.size()) {
-            Reminder reminder = reminders.get(index);
-
-            System.out.println("Current Title: " + reminder.getTitle());
-            System.out.print("Enter new title: ");
-            String newTitle = scanner.nextLine();
-
-            System.out.println("Current Description: " + reminder.getDescription());
-            System.out.print("Enter new description: ");
-            String newDescription = scanner.nextLine();
-
-            System.out.println("Current Date: " + reminder.getDate());
-            System.out.print("Enter new date: ");
-            String newDate = scanner.nextLine();
-
-            reminder = new Reminder(newTitle, newDescription, newDate);
-            reminders.set(index, reminder);
-
-            System.out.println("Reminder updated successfully!");
-        } else {
-            System.out.println("Invalid index. Please try again.");
+        switch (choice) {
+            case 1:
+                return Recurrence.NONE;
+            case 2:
+                return Recurrence.DAILY;
+            case 3:
+                return Recurrence.WEEKLY;
+            case 4:
+                return Recurrence.MONTHLY;
+            case 5:
+                return Recurrence.YEARLY;
+            default:
+                System.out.println("Invalid choice. Defaulting to None.");
+                return Recurrence.NONE;
         }
     }
 
-    public void deleteReminder() {
-        System.out.print("Enter the index of the reminder to delete: ");
-        int index = scanner.nextInt();
+    // Method to ask the user for priority and return the chosen value
+    private Priority askForPriority() {
+        System.out.println("Select Priority:");
+        System.out.println("1. Low");
+        System.out.println("2. Medium");
+        System.out.println("3. High");
+
+        System.out.print("Enter your choice: ");
+        int choice = scanner.nextInt();
         scanner.nextLine(); // Consume newline character
 
-        if (index >= 0 && index < reminders.size()) {
-            reminders.remove(index);
-            System.out.println("Reminder deleted successfully!");
-        } else {
-            System.out.println("Invalid index. Please try again.");
+        switch (choice) {
+            case 1:
+                return Priority.LOW;
+            case 2:
+                return Priority.MEDIUM;
+            case 3:
+                return Priority.HIGH;
+            default:
+                System.out.println("Invalid choice. Defaulting to Low.");
+                return Priority.LOW;
         }
     }
 
-    public void run() {
+    public static void main(String[] args) {
+        ReminderApp reminderApp = new ReminderApp();
+
+        // Display the main menu with options
         while (true) {
-            System.out.println("Reminder App Menu:");
-            System.out.println("1. Add Reminder");
+            System.out.println("Reminder Application Menu:");
+            System.out.println("1. Add a Reminder");
             System.out.println("2. View Reminders");
-            System.out.println("3. Edit Reminder");
-            System.out.println("4. Delete Reminder");
-            System.out.println("5. Search Reminders");
-            System.out.println("6. Exit");
-    
+            System.out.println("3. Exit");
+
             System.out.print("Enter your choice: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline character
-    
+            int choice = reminderApp.scanner.nextInt();
+            reminderApp.scanner.nextLine(); // Consume newline character
+
             switch (choice) {
                 case 1:
-                    addReminder();
+                    reminderApp.addReminder();
                     break;
                 case 2:
-                    viewReminders();
+                    reminderApp.viewReminders();
                     break;
                 case 3:
-                    editReminder();
-                    break;
-                case 4:
-                    deleteReminder();
-                    break;
-                case 5:
-                    searchReminders();
-                    break;
-                case 6:
-                    System.out.println("Exiting...");
+                    System.out.println("Exiting Reminder Application.");
                     System.exit(0);
                 default:
                     System.out.println("Invalid choice. Please try again.");
             }
-    
-            System.out.println();
         }
-    }
-    
-
-    public static void main(String[] args) {
-        ReminderApp app = new ReminderApp();
-        app.run();
     }
 }
