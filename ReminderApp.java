@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Scanner;
 
 class Reminder {
-    // This reminder class represents a single reminder with it's title, description, date, recurrence, and priority
+    // This reminder class represents a single reminder with its title, description, date, recurrence, and priority
     private String title;
     private String description;
     private String date;
@@ -140,11 +140,38 @@ public class ReminderApp {
             // Display the sorting menu and get the user's choice
             int choice = displaySortingMenu();
 
-            // Sort the reminders based on the users choice
+            // Sort the reminders based on the user's choice
             sortReminders(choice);
 
             // Display the sorted reminders
             displayReminders();
+        }
+    }
+
+    // Method to delete a reminder from the list
+    public void deleteReminder() {
+        if (reminders.isEmpty()) {
+            System.out.println("No reminders found.");
+        } else {
+            displayReminders(); // Display the reminders to choose from
+
+            System.out.print("Enter the index of the reminder to delete: ");
+            int index = scanner.nextInt();
+            scanner.nextLine(); // Consume newline character
+
+            if (index >= 0 && index < reminders.size()) {
+                Reminder deletedReminder = reminders.remove(index);
+                System.out.println("Reminder deleted:");
+                System.out.println("Title: " + deletedReminder.getTitle());
+                System.out.println("Description: " + deletedReminder.getDescription());
+                System.out.println("Date: " + deletedReminder.getDate());
+                System.out.println("Recurrence: " + deletedReminder.getRecurrence());
+                System.out.println("Priority: " + deletedReminder.getPriority());
+
+                saveReminders(); // Save the updated reminders list
+            } else {
+                System.out.println("Invalid index. No reminder deleted.");
+            }
         }
     }
 
@@ -164,7 +191,7 @@ public class ReminderApp {
         return choice;
     }
 
-    // Method to sort the reminders based on the users choice
+    // Method to sort the reminders based on the user's choice
     private void sortReminders(int choice) {
         switch (choice) {
             case 1:
@@ -180,109 +207,80 @@ public class ReminderApp {
                 Collections.sort(reminders, Comparator.comparing(Reminder::getPriority));
                 break;
             case 5:
-                return; // Return to main menu
+                return; // Return to the main menu
             default:
-                System.out.println("Invalid choice. Returning to main menu.");
-                return; // Return to main menu
+                System.out.println("Invalid choice. Returning to the main menu.");
+                return; // Return to the main menu
         }
     }
 
     // Method to display the sorted reminders
     private void displayReminders() {
-        System.out.println("Sorted Reminders:");
-        for (int i = 0; i < reminders.size(); i++) {
-            Reminder reminder = reminders.get(i);
-            System.out.println("Index: " + i);
+        System.out.println("Reminder List:");
+        int index = 0;
+        for (Reminder reminder : reminders) {
+            System.out.println("Index: " + index);
             System.out.println("Title: " + reminder.getTitle());
             System.out.println("Description: " + reminder.getDescription());
             System.out.println("Date: " + reminder.getDate());
             System.out.println("Recurrence: " + reminder.getRecurrence());
             System.out.println("Priority: " + reminder.getPriority());
-            System.out.println("----------------------");
+            System.out.println();
+            index++;
         }
     }
 
-    // Method to ask the user for recurrence and return the chosen value
+    // Method to ask for the recurrence of a reminder
     private Recurrence askForRecurrence() {
-        System.out.println("Select Recurrence:");
-        System.out.println("1. None");
-        System.out.println("2. Daily");
-        System.out.println("3. Weekly");
-        System.out.println("4. Monthly");
-        System.out.println("5. Yearly");
-
-        System.out.print("Enter your choice: ");
-        int choice = scanner.nextInt();
-        scanner.nextLine(); // Consume newline character
-
-        switch (choice) {
-            case 1:
-                return Recurrence.NONE;
-            case 2:
-                return Recurrence.DAILY;
-            case 3:
-                return Recurrence.WEEKLY;
-            case 4:
-                return Recurrence.MONTHLY;
-            case 5:
-                return Recurrence.YEARLY;
-            default:
-                System.out.println("Invalid choice. Defaulting to None.");
-                return Recurrence.NONE;
-        }
+        System.out.print("Enter the recurrence (NONE, DAILY, WEEKLY, MONTHLY, YEARLY): ");
+        String recurrenceStr = scanner.nextLine().toUpperCase();
+        return Recurrence.valueOf(recurrenceStr);
     }
 
-    // Method to ask the user for priority and return the chosen value
+    // Method to ask for the priority of a reminder
     private Priority askForPriority() {
-        System.out.println("Select Priority:");
-        System.out.println("1. Low");
-        System.out.println("2. Medium");
-        System.out.println("3. High");
-
-        System.out.print("Enter your choice: ");
-        int choice = scanner.nextInt();
-        scanner.nextLine(); // Consume newline character
-
-        switch (choice) {
-            case 1:
-                return Priority.LOW;
-            case 2:
-                return Priority.MEDIUM;
-            case 3:
-                return Priority.HIGH;
-            default:
-                System.out.println("Invalid choice. Defaulting to Low.");
-                return Priority.LOW;
-        }
+        System.out.print("Enter the priority (LOW, MEDIUM, HIGH): ");
+        String priorityStr = scanner.nextLine().toUpperCase();
+        return Priority.valueOf(priorityStr);
     }
 
     public static void main(String[] args) {
-        ReminderApp reminderApp = new ReminderApp();
+        ReminderApp app = new ReminderApp();
+        app.run();
+    }
 
-        // Display the main menu with options
-        while (true) {
-            System.out.println("Reminder Application Menu:");
-            System.out.println("1. Add a Reminder");
+    // Method to display the main menu and handle user choices
+    public void run() {
+        boolean exit = false;
+        while (!exit) {
+            System.out.println("Reminder App Menu:");
+            System.out.println("1. Add Reminder");
             System.out.println("2. View Reminders");
-            System.out.println("3. Exit");
+            System.out.println("3. Delete Reminder");
+            System.out.println("4. Exit");
 
             System.out.print("Enter your choice: ");
-            int choice = reminderApp.scanner.nextInt();
-            reminderApp.scanner.nextLine(); // Consume newline character
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline character
 
             switch (choice) {
                 case 1:
-                    reminderApp.addReminder();
+                    addReminder();
                     break;
                 case 2:
-                    reminderApp.viewReminders();
+                    viewReminders();
                     break;
                 case 3:
-                    System.out.println("Exiting Reminder Application.");
-                    System.exit(0);
+                    deleteReminder();
+                    break;
+                case 4:
+                    exit = true;
+                    break;
                 default:
-                    System.out.println("Invalid choice. Please try again.");
+                    System.out.println("Invalid choice. Please enter a number from 1 to 4.");
+                    break;
             }
         }
+        System.out.println("Exiting Reminder App. Goodbye!");
     }
 }
